@@ -17,6 +17,12 @@ type UserModel struct {
 	UpdatedAt time.Time
 }
 
+type CredentialsModel struct {
+	ID       uuid.UUID
+	Email    string
+	Password string
+}
+
 func CreateUser(user *UserModel) (uuid.UUID, error) {
 	db := database.GetConnection()
 	defer db.Close()
@@ -30,4 +36,14 @@ func CreateUser(user *UserModel) (uuid.UUID, error) {
 
 }
 
-func Test() {}
+func GetUserCredentialsByEmail(email *string) (credentialsModel CredentialsModel, err error) {
+	db := database.GetConnection()
+	defer db.Close()
+
+	sqlStatement := `select id, email, password from users u where email=$1`
+
+	row := db.QueryRow(sqlStatement, email)
+	err = row.Scan(&credentialsModel.ID, &credentialsModel.Email, &credentialsModel.Password)
+
+	return credentialsModel, err
+}

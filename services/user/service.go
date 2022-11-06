@@ -2,6 +2,8 @@ package user
 
 import (
 	"chat-app/database/models/users"
+	authService "chat-app/services/auth"
+	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -21,7 +23,10 @@ func hashPassword(password string) (string, error) {
 	}
 
 	return string(hashedPass), err
+}
 
+func verifyPassword(password, hashedPassword string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
 func CreateUser(createUserDomain *CreateUserDomain) (id string, err error) {
@@ -47,4 +52,27 @@ func CreateUser(createUserDomain *CreateUserDomain) (id string, err error) {
 	}
 
 	return result.String(), nil
+}
+
+func ValidateCredentials(email *string, password *string) (id string, err error) {
+
+	credentials, err := users.GetUserCredentialsByEmail(email)
+
+	if err != nil {
+		return "", err
+	}
+
+	err = verifyPassword(*password, credentials.Password)
+
+	if err != nil {
+		return "", errors.New("invalid pasword")
+	}
+
+	token, err := authService.GenerateToken(credentials.ID.String())
+
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }

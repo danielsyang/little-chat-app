@@ -7,4 +7,4 @@ CREATE TABLE
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW (),
     PRIMARY KEY (ID),
     CONSTRAINT fk_author FOREIGN KEY (user_id) REFERENCES users (id)
-  )
+  );
