@@ -3,6 +3,7 @@ package messages
 import (
 	"net/http"
 
+	"chat-app/api/middleware"
 	"chat-app/database/models/message"
 
 	"github.com/gin-gonic/gin"
@@ -20,11 +21,11 @@ func GetMessages(c *gin.Context) {
 }
 
 type CreateMessageInterface struct {
-	UserId  string `json:"userId" binding:"required,uuid"`
 	Content string `json:"content" binding:"required"`
 }
 
 func CreateMessage(c *gin.Context) {
+	userId := middleware.GetUserId(c)
 	var msgInterface CreateMessageInterface
 
 	if err := c.ShouldBindJSON(&msgInterface); err != nil {
@@ -32,7 +33,9 @@ func CreateMessage(c *gin.Context) {
 		return
 	}
 
-	result, err := message.CreateMessage(&msgInterface.UserId, &msgInterface.Content)
+	println("userId:", userId)
+
+	result, err := message.CreateMessage(&userId, &msgInterface.Content)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
